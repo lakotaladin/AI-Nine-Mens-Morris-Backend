@@ -197,50 +197,85 @@ def undo_move(state, move):
     state['turn'] += 1
 
 
-def minimax(state, depth, player, line_made = False):
+# def minimax(state, depth, player, line_made = False):
+#     if depth == 0 or is_end(state):
+#         return evaluate(state), None
+
+#     next_player = player * -1
+    
+#     if player == WHITE:
+#         value = -1000000
+#         best_move = None
+#         for move in get_moves(state, player, line_made):
+#             apply_move(state, move)
+#             if is_making_line(state, move):
+#                 next_player *= -1
+#                 line_made = True
+#             value = max(value, minimax(state, depth - 1, next_player, line_made)[0])
+#             best_move = move
+#             line_made = False
+#             undo_move(state, move)
+#         return value, best_move
+#     else:
+#         value = 1000000
+#         best_move = None
+#         for move in get_moves(state, player, line_made):
+#             apply_move(state, move)
+#             if is_making_line(state, move):
+#                 next_player *= -1
+#                 line_made = True
+#             value = min(value, minimax(state, depth - 1, next_player, line_made)[0])
+#             best_move = move
+#             line_made = False
+#             undo_move(state, move)
+#         return value, best_move
+
+def minimax(state, depth, player, line_made=False, alpha=float('-inf'), beta=float('inf')):
     if depth == 0 or is_end(state):
         return evaluate(state), None
-    
-    # if state['turn'] < 5:
-    #     for move in get_moves(state, player, line_made):
-    #         return 0, move
 
     next_player = player * -1
-    
+
     if player == WHITE:
-        value = -1000000
+        value = float('-inf')
         best_move = None
         for move in get_moves(state, player, line_made):
             apply_move(state, move)
             if is_making_line(state, move):
                 next_player *= -1
                 line_made = True
-            value = max(value, minimax(state, depth - 1, next_player, line_made)[0])
-            best_move = move
+            new_value = minimax(state, depth - 1, next_player, line_made, alpha, beta)[0]
+            if new_value > value:
+                value = new_value
+                best_move = move
             line_made = False
             undo_move(state, move)
+            alpha = max(alpha, value)
+            if value >= beta:
+                break
         return value, best_move
     else:
-        value = 1000000
+        value = float('inf')
         best_move = None
         for move in get_moves(state, player, line_made):
             apply_move(state, move)
             if is_making_line(state, move):
                 next_player *= -1
                 line_made = True
-            value = min(value, minimax(state, depth - 1, next_player, line_made)[0])
-            best_move = move
+            new_value = minimax(state, depth - 1, next_player, line_made, alpha, beta)[0]
+            if new_value < value:
+                value = new_value
+                best_move = move
             line_made = False
             undo_move(state, move)
-        return value, best_move
+            beta = min(beta, value)
+            if value <= alpha:
+                break
+        return value, best_move    
 
 def alphabeta(state, depth, a, b, player, line_made = False):
     if depth == 0 or is_end(state):
         return evaluate(state), None
-    
-    # if state['turn'] < 5:
-    #     for move in get_moves(state, player, line_made):
-    #         return 0, move
 
     next_player = player * -1
     
