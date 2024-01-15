@@ -21,6 +21,7 @@ def evaluate(state):
     
     value = 0
     
+    # count horizontal lines
     for square in range(3):
         for line in [0, 2]:
             line_sum = 0
@@ -29,7 +30,8 @@ def evaluate(state):
             
             if abs(line_sum) > 1:
                 value += line_sum * 10
-                
+
+    # count vertical lines            
     for square in range(3):
         for line in [0, 2]:
             line_sum = 0
@@ -39,6 +41,16 @@ def evaluate(state):
             if abs(line_sum) > 1:
                 value += line_sum * 10
     
+    # count number of stones
+    value += state['white_count'] * 5
+    value -= state['black_count'] * 5
+    return value
+
+
+def easy_evaluate(state):
+    stones = state['stones']
+    
+    value = 0
     value += state['white_count'] * 5
     value -= state['black_count'] * 5
     return value
@@ -73,14 +85,16 @@ def get_neighboaring_empty_spots(state, x, y, z):
 
 
 def get_moves(state, player, line_made):
-    # REMOVE_STATE moves
+    # REMOVE_STONE moves
     if line_made:
         for s, square in enumerate(state['stones']):
             for i, row in enumerate(square):
                 for j, element in enumerate(row):
+                    # move = (REMOVE_STONE, player * -1, s, i, j)
+                    # if element == player * -1 and not is_making_line(state, move):
+                    #     yield move
                     if element == player * -1:
                         yield REMOVE_STONE, player, s, i, j
-                        
         return
     
     # SET_STONE moves
@@ -232,7 +246,8 @@ def undo_move(state, move):
 
 def minimax(state, depth, player, line_made=False, alpha=float('-inf'), beta=float('inf')):
     if depth == 0 or is_end(state):
-        return evaluate(state), None
+        return easy_evaluate(state), None
+
 
     next_player = player * -1
 
@@ -287,13 +302,18 @@ def alphabeta(state, depth, a, b, player, line_made = False):
             if is_making_line(state, move):
                 next_player *= -1
                 line_made = True
-            value = max(value, alphabeta(state, depth - 1, a, b, next_player, line_made)[0])
-            best_move = move
+            if move[MOVE_TYPE] == REMOVE_STONE:
+                line_made = False    
+            new_value = alphabeta(state, depth - 1, a, b, next_player, line_made)[0]
+            if new_value > value:
+                best_move = move
+                value = new_value
             line_made = False
             undo_move(state, move)
             if value > b:
                 break
             a = max(a, value)
+        print(depth, ' ' * depth, value, best_move)    
         return value, best_move
     else:
         value = 1000000
@@ -303,11 +323,16 @@ def alphabeta(state, depth, a, b, player, line_made = False):
             if is_making_line(state, move):
                 next_player *= -1
                 line_made = True
-            value = min(value, alphabeta(state, depth - 1, a, b, next_player, line_made)[0])
-            best_move = move
+            if move[MOVE_TYPE] == REMOVE_STONE:
+                line_made = False    
+            new_value = alphabeta(state, depth - 1, a, b, next_player, line_made)[0]
+            if new_value < value:
+                best_move = move
+                value = new_value
             line_made = False
             undo_move(state, move)
             if value < a:
                 break
             b = min(b, value)
+        print(depth, ' ' * depth, value, best_move)    
         return value, best_move

@@ -9,8 +9,8 @@ import json
 from .ai import minimax, alphabeta
 
 DEPTH_EASY = 3
-DEPTH_MEDIUM = 5
-DEPTH_HARD = 6
+DEPTH_MEDIUM = 4
+DEPTH_HARD = 5
 
 @csrf_exempt
 def make_move(request):
