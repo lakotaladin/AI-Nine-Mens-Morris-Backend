@@ -8,7 +8,7 @@ import json
 
 from .ai import minimax, alphabeta
 
-DEPTH_EASY = 3
+DEPTH_EASY = 2
 DEPTH_MEDIUM = 4
 DEPTH_HARD = 5
 
