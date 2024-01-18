@@ -1,100 +1,50 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.pyo
-*.pyc
-*.pyo
-*.pyz
-*.pyw
-*.pyc
+*.py[cod]
 
-# Django
-*.log
-*.pot
-*.pyc
-*.pyo
-__pycache__/
-local_settings.py
-db.sqlite3
+# C extensions
+*.so
 
-# Development
-*.env
-.vscode/
-*.pyc
-*.pyo
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# IDE
-.idea/
-
-# Virtual Environment
-venv/
-env/
-env3/
-__env__/
-venv-[0-9]*/
-[._]env
+# Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Ignore all local .env files in your Django project
-**/.env
-
-# Ignore macOS system files
-.DS_Store
-
-# Ignore Python bytecode files
-*.pyc
-
-# Ignore Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-
-# Ignore pytest cache
-__pycache__/
-.pytest_cache/
-
-# Ignore VS Code settings
-.vscode/
-
-# Ignore PyCharm settings
-.idea/
-*.iml
-
-# Ignore SQLite database files
-*.sqlite3
-
-# Ignore temporary files
-*.swp
-*.swo
-
-# Ignore coverage output
+# Unit test / coverage reports
+.tox/
 .coverage
-htmlcov/
+.cache
+nosetests.xml
+coverage.xml
 
-# Ignore pytest cache
-__pycache__/
-.pytest_cache/
+# Translations
+*.mo
 
-# Ignore migration files for Django
-**/migrations/*.py
-**/migrations/*.pyc
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
 
-# Ignore Docker-related files
-Dockerfile
-docker-compose.yml
-.dockerignore
+# Rope
+.ropeproject
 
-# Ignore logs
+# Django stuff:
 *.log
+*.pot
 
-# Ignore Celery files
-celerybeat-schedule
-celerybeat.pid
-
-# Ignore AWS credentials
-.aws/credentials
-
-# Ignore Heroku local settings
-Procfile
-runtime.txt
+# Sphinx documentation
+docs/_build/
