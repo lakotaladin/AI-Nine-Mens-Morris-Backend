@@ -72,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'mica.wsgi.application'
+WSGI_APPLICATION = 'mica.wsgi.app'
 
 
 # Database
