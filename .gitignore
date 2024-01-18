@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyo
+*.pyc
+*.pyo
+*.pyz
+*.pyw
+*.pyc
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+__pycache__/
+local_settings.py
+db.sqlite3
+
+# Development
+*.env
+.vscode/
+*.pyc
+*.pyo
+
+# IDE
+.idea/
+
+# Virtual Environment
+venv/
+env/
+env3/
+__env__/
+venv-[0-9]*/
+[._]env
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore all local .env files in your Django project
+**/.env
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Python bytecode files
+*.pyc
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore pytest cache
+__pycache__/
+.pytest_cache/
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore PyCharm settings
+.idea/
+*.iml
+
+# Ignore SQLite database files
+*.sqlite3
+
+# Ignore temporary files
+*.swp
+*.swo
+
+# Ignore coverage output
+.coverage
+htmlcov/
+
+# Ignore pytest cache
+__pycache__/
+.pytest_cache/
+
+# Ignore migration files for Django
+**/migrations/*.py
+**/migrations/*.pyc
+
+# Ignore Docker-related files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Ignore logs
+*.log
+
+# Ignore Celery files
+celerybeat-schedule
+celerybeat.pid
+
+# Ignore AWS credentials
+.aws/credentials
+
+# Ignore Heroku local settings
+Procfile
+runtime.txt
