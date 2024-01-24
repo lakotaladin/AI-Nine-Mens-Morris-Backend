@@ -18,6 +18,7 @@ def is_end(state):
     return state['white_remaining'] == 0 and state['black_remaining'] == 0 and (state['white_count'] <= 2 or state['black_count'] <= 2)
 
 
+# HEURISTIKA ZA TESKU IGRU
 def evaluate(state):
     stones = state['stones']
 
@@ -180,9 +181,8 @@ def easy_evaluate(state):
     value += state['black_count'] * 2
     return value
 
-# HEURISTIKA ZA TESKU IGRU
 
-
+# HEURISTIKA ZA SREDNJU IGRU
 def medium_evaluate(state):
     stones = state['stones']
 
@@ -196,7 +196,7 @@ def medium_evaluate(state):
                 line_sum += stones[square][line][spot]
 
             if abs(line_sum) == 3:
-                value += line_sum * 500
+                value += line_sum * 10
 
     # count vertical lines
     for square in range(3):
@@ -206,7 +206,7 @@ def medium_evaluate(state):
                 line_sum += stones[square][spot][line]
 
             if abs(line_sum) == 3:
-                value += line_sum * 500
+                value += line_sum * 10
 
     # leva linija medju kvadratima
     line_sum = 0
@@ -214,7 +214,7 @@ def medium_evaluate(state):
         line_sum += stones[square][1][1]
 
     if abs(line_sum) == 3:
-        value += line_sum * 500
+        value += line_sum * 10
 
     # gornja linija medju kvadratima
     line_sum = 0
@@ -222,7 +222,7 @@ def medium_evaluate(state):
         line_sum += stones[square][0][1]
 
     if abs(line_sum) == 3:
-        value += line_sum * 500
+        value += line_sum * 10
 
     # desna linija medju kvadratima
     line_sum = 0
@@ -230,7 +230,7 @@ def medium_evaluate(state):
         line_sum += stones[square][1][2]
 
     if abs(line_sum) == 3:
-        value += line_sum * 500
+        value += line_sum * 10
 
     # donja linija medju kvadratima
     line_sum = 0
@@ -238,7 +238,7 @@ def medium_evaluate(state):
         line_sum += stones[square][2][1]
 
     if abs(line_sum) == 3:
-        value += line_sum * 500
+        value += line_sum * 10
 
     return value
 
@@ -311,7 +311,6 @@ def get_moves(state, player, line_made):
     return moves
 
 # Dodajemo funkciju za proveru da li je kamen u liniji
-
 
 def is_stone_in_line(state, x, y, z):
     stones = state['stones']
@@ -575,7 +574,7 @@ def minimax(state, depth, player, line_made=False, alpha=float('-inf'), beta=flo
 
     return value, best_move
 
-
+# MEDIUM
 def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
     if depth == 0 or is_end(state):
         return medium_evaluate(state), None
@@ -591,15 +590,12 @@ def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
             if is_making_line(state_copy, move):
                 next_player *= -1
                 line_made = True
-            # if move[MOVE_TYPE] == REMOVE_STONE:
-            #     line_made = False
             new_value = alphabeta(state_copy, depth - 1,
             a, b, next_player, line_made, -1)[0]
             if new_value > value or best_move is None:
                 best_move = move
                 value = new_value
             line_made = False
-            # undo_move(state, move)
             if value > b:
                 break
             a = max(a, value)
@@ -613,71 +609,18 @@ def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
             if is_making_line(state_copy, move):
                 next_player *= -1
                 line_made = True
-            # if move[MOVE_TYPE] == REMOVE_STONE:
-            #     line_made = False
             new_value = alphabeta(state_copy, depth - 1,
             a, b, next_player, line_made, 1)[0]
             if new_value < value or best_move is None:
                 best_move = move
                 value = new_value
             line_made = False
-            # undo_move(state, move)
             if value < a:
                 break
             b = min(b, value)
         return value, best_move
 
-
-# def alphabeta(state, depth, a, b, player, line_made=False,rock=-1):
-#     if depth == 0 or is_end(state):
-#         return evaluate(state), None
-
-#     next_player = player * -1
-
-#     if player == WHITE:
-#         value = float('-inf')
-#         best_move = None
-#         for move in get_moves(state, player, line_made):
-#             state_copy = copy.deepcopy(state)
-#             apply_move(state_copy, move)
-#             if is_making_line(state_copy, move):
-#                 next_player *= -1
-#                 line_made = True
-#             # if move[MOVE_TYPE] == REMOVE_STONE:
-#             #     line_made = False
-#             new_value = alphabeta(state_copy, depth - 1, a, b, next_player, line_made,-1)[0]
-#             if new_value > value or best_move is None:
-#                 best_move = move
-#                 value = new_value
-#             line_made = False
-#             # undo_move(state, move)
-#             if value > b:
-#                 break
-#             a = max(a, value)
-#         return value, best_move
-#     elif player == BLACK:
-#         value = float('inf')
-#         best_move = None
-#         for move in get_moves(state, player, line_made):
-#             state_copy = copy.deepcopy(state)
-#             apply_move(state_copy, move)
-#             if is_making_line(state_copy, move):
-#                 next_player *= -1
-#                 line_made = True
-#             # if move[MOVE_TYPE] == REMOVE_STONE:
-#             #     line_made = False
-#             new_value = alphabeta(state_copy, depth - 1, a, b, next_player, line_made,1)[0]
-#             if new_value < value or best_move is None:
-#                 best_move = move
-#                 value = new_value
-#             line_made = False
-#             # undo_move(state, move)
-#             if value < a:
-#                 break
-#             b = min(b, value)
-#         return value, best_move
-
-
+# HARD
 def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
     if depth == 0 or is_end(state):
         return evaluate(state), None
