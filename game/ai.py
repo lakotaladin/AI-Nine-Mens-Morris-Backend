@@ -183,64 +183,83 @@ def easy_evaluate(state):
 
 
 # HEURISTIKA ZA SREDNJU IGRU
+# heuristika za srednju igru
 def medium_evaluate(state):
-    stones = state['stones']
+    stones = state['stones']  # matrica kamena na tabli
 
-    value = 0
+    value = 0  # inicijalna vrednost evaluacije
 
-    # count horizontal lines
-    for square in range(3):
-        for line in [0, 2]:
+    # identifikacija potencijalnih mlinova za crnog igraca i blokiranje belog igraca
+    for square in range(3):  # prolaz kroz sva 3 kvadrata
+        for line in [0, 2]:  # prolaz kroz horizontalne linije u kvadratu
             line_sum = 0
-            for spot in range(3):
+            for spot in range(3):  # prolaz kroz sve pozicije u liniji
+                line_sum += state['stones'][square][line][spot]
+
+            if abs(line_sum) == 2:  # ako beli igrac ima 2 kamena u liniji
+                # blokiranje potencijalnih mlinova belog igraca postavljanjem crnog kamena u blizini
+                for spot in range(3):
+                    if state['stones'][square][line][spot] == 0:  # ako je pozicija prazna
+                        state_copy = copy.deepcopy(state)  # kopiranje stanja
+                        apply_move(state_copy, (SET_STONE, BLACK, square, line, spot))  # postavljanje crnog kamena
+                        vred_potencijalnog_mlina = evaluate(state_copy)  # evaluacija novog stanja
+                        # nagradjivanje crnog igraca sa 15 bodova ako blokira belog igraca
+                        value += 15
+
+    # brojanje horizontalnih linija
+    for square in range(3):  # prolaz kroz sva 3 kvadrata
+        for line in [0, 2]:  # prolaz kroz horizontalne linije u kvadratu
+            line_sum = 0
+            for spot in range(3):  # prolaz kroz sve pozicije u liniji
                 line_sum += stones[square][line][spot]
 
-            if abs(line_sum) == 3:
-                value += line_sum * 10
+            if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
+                value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
 
-    # count vertical lines
-    for square in range(3):
-        for line in [0, 2]:
+    # brojanje vertikalnih linija
+    for square in range(3):  # prolaz kroz sva 3 kvadrata
+        for line in [0, 2]:  # prolaz kroz vertikalne linije u kvadratu
             line_sum = 0
-            for spot in range(3):
+            for spot in range(3):  # prolaz kroz sve pozicije u liniji
                 line_sum += stones[square][spot][line]
 
-            if abs(line_sum) == 3:
-                value += line_sum * 10
+            if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
+                value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
 
-    # leva linija medju kvadratima
+    # leva linija među kvadratima
     line_sum = 0
-    for square in range(3):
+    for square in range(3):  # prolaz kroz sva 3 kvadrata
         line_sum += stones[square][1][1]
 
-    if abs(line_sum) == 3:
-        value += line_sum * 10
+    if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
+        value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
 
-    # gornja linija medju kvadratima
+    # gornja linija među kvadratima
     line_sum = 0
-    for square in range(3):
+    for square in range(3):  # prolaz kroz sva 3 kvadrata
         line_sum += stones[square][0][1]
 
-    if abs(line_sum) == 3:
-        value += line_sum * 10
+    if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
+        value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
 
-    # desna linija medju kvadratima
+    # desna linija među kvadratima
     line_sum = 0
-    for square in range(3):
+    for square in range(3):  # prolaz kroz sva 3 kvadrata
         line_sum += stones[square][1][2]
 
-    if abs(line_sum) == 3:
-        value += line_sum * 10
+    if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
+        value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
 
-    # donja linija medju kvadratima
+    # donja linija među kvadratima
     line_sum = 0
-    for square in range(3):
+    for square in range(3):  # prolaz kroz sva 3 kvadrata
         line_sum += stones[square][2][1]
 
-    if abs(line_sum) == 3:
-        value += line_sum * 10
+    if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
+        value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
 
-    return value
+    return value 
+
 
 
 def get_neighboaring_empty_spots(state, x, y, z):
