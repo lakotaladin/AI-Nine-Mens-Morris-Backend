@@ -6,7 +6,7 @@ from random import random
 
 import json
 
-from .ai import minimax, alphabeta
+from .ai import minimax, alphabeta, alphabeta_medium
 
 DEPTH_EASY = 2
 DEPTH_MEDIUM = 3
@@ -22,8 +22,8 @@ def make_move(request):
     if difficulty == 'easy':
         _, move = minimax(state, DEPTH_EASY, player, line_made)
     elif difficulty == 'medium':
-        _, move = alphabeta(state, DEPTH_MEDIUM, -100000, 100000, player, line_made,1)
+        _, move = alphabeta_medium(state, DEPTH_MEDIUM, -100000, 100000, player, line_made)
     elif difficulty == 'hard':
-        _, move = alphabeta(state, DEPTH_HARD, -100000, 100000, player, line_made,1)
+        _, move = alphabeta(state, DEPTH_HARD, -100000, 100000, player, line_made)
     
     return JsonResponse({ 'move': move })

@@ -7,6 +7,9 @@ REMOVE_STONE = 'remove'
 WHITE = 1
 BLACK = -1
 
+# potez izgleda ovako (MOVE_TYPE, MOVE_COLOR, MOVE_X, MOVE_Y, MOVE_Z)
+# ove konstante su indeksi u tuple koji predstavlja potez
+# npr: ako indeksiramo potez sa MOVE_TYPE (nulom), dobicemo tip poteza
 MOVE_TYPE = 0
 MOVE_COLOR = 1
 MOVE_X = 2
@@ -18,6 +21,24 @@ def is_end(state):
     return state['white_remaining'] == 0 and state['black_remaining'] == 0 and (state['white_count'] <= 2 or state['black_count'] <= 2)
 
 
+# stones[square][line][spot]
+# [
+#       0  1  2 
+#       ^--^--^--- polja unutar linije      
+#    
+#     [[0, 0, 0],   kvadrat 0   linija 0
+#      [0, X, 0],               linija 1
+#      [0, 0, 0]],              linija 2
+#
+#     [[0, 0, 0],   kvadrat 1   linija 0
+#      [0, X, 0],               linija 1
+#      [0, 0, 0]],              linija 2
+#
+#     [[0, 0, 0],   kvadrat 2   linija 0
+#      [0, X, 0],               linija 1
+#      [0, 0, 0]],              linija 2
+# ]
+
 # HEURISTIKA ZA TESKU IGRU
 def evaluate(state):
     stones = state['stones']
@@ -25,38 +46,88 @@ def evaluate(state):
     value = 0
 
     # count horizontal lines
+    # proveravamo za svaki kvadrat
+    # square je trenutni kvadrat koji proveravamo
     for square in range(3):
+        # proveravamo horizontalne linije unutar kvadrata
+        # srednju liniju (liniju 1) preskacemo jer
+        # ona nema 3 elementa i ne moze da napravi mlin
         for line in [0, 2]:
             line_sum = 0
+            # za trenutnu liniju proveravamo svako polje
+            # sabiramo ih sve tako sto 1 predstavalja beli kamen,
+            # -1 crni a nula prazno polje
             for spot in range(3):
                 line_sum += stones[square][line][spot]
 
+            # ako smo dobili zbir 3, to znaci da postoji linija koja ima 3 bela kamena
+            # ako smo dobili zbir -3, postoji linija sa 3 crna kamena
+            # posto nas zanima je li postoji linija uopste, uzimamo apsolutnu vrednost
+            # ako je apsolutna vrednost 3, znaci da ima linija neke boje
             if abs(line_sum) == 3: # proveravam da li je uopste linija
+                # line_sum je pozitivan broj za belog a negativan za crtnog
+                # tako da mozemo da ga dodamo na vrednost heuristike s time sto
+                # mnozimo sa 10 jer smo izabrali tu vrednost za liniju (bice 30 ili -30)
                 value += line_sum * 10
-                if line_sum == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
-                    value += 15
+                
+            # proveravamo potencijalnu liniju,
+            # u slucaju da imaju 2 kamena iste boje, apsolutni zbir ce biti 2
+            if abs(line_sum) == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
+                value += line_sum * 7
+
 
     # count vertical lines
+    # proveravamo za svaki kvadrat
+    # square je trenutni kvadrat koji proveravamo
     for square in range(3):
+        # proveravamo vertikalne linije unutar kvadrata
+        # srednju liniju (liniju 1) preskacemo jer
+        # ona nema 3 elementa i ne moze da napravi mlin
         for line in [0, 2]:
             line_sum = 0
+            # za trenutnu liniju proveravamo svako polje
+            # sabiramo ih sve tako sto 1 predstavalja beli kamen,
+            # -1 crni a nula prazno polje
             for spot in range(3):
                 line_sum += stones[square][spot][line]
 
+            # ako smo dobili zbir 3, to znaci da postoji linija koja ima 3 bela kamena
+            # ako smo dobili zbir -3, postoji linija sa 3 crna kamena
+            # posto nas zanima je li postoji linija uopste, uzimamo apsolutnu vrednost
+            # ako je apsolutna vrednost 3, znaci da ima linija neke boje
             if abs(line_sum) == 3:
+                # line_sum je pozitivan broj za belog a negativan za crtnog
+                # tako da mozemo da ga dodamo na vrednost heuristike s time sto
+                # mnozimo sa 10 jer smo izabrali tu vrednost za liniju (bice 30 ili -30)
                 value += line_sum * 10
-                if line_sum == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
-                    value += 15
+
+            # proveravamo potencijalnu liniju,
+            # u slucaju da imaju 2 kamena iste boje, apsolutni zbir ce biti 2
+            if abs(line_sum) == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
+                value += line_sum * 7
 
     # leva linija medju kvadratima
+    # svako polje u levoj liniji koja spaja kvadrate ima
+    # indekse za liniju i polje 1, a jedino se razlikuje indeks za kvadrat
+    # za svaki kvadrat proveravamo odredjeno polje koje cini tu liniju
     line_sum = 0
     for square in range(3):
         line_sum += stones[square][1][1]
 
+    # ako smo dobili zbir 3, to znaci da postoji linija koja ima 3 bela kamena
+    # ako smo dobili zbir -3, postoji linija sa 3 crna kamena
+    # posto nas zanima je li postoji linija uopste, uzimamo apsolutnu vrednost
+    # ako je apsolutna vrednost 3, znaci da ima linija neke boje
     if abs(line_sum) == 3:
+        # line_sum je pozitivan broj za belog a negativan za crtnog
+        # tako da mozemo da ga dodamo na vrednost heuristike s time sto
+        # mnozimo sa 10 jer smo izabrali tu vrednost za liniju (bice 30 ili -30)
         value += line_sum * 10
-        if line_sum == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
-            value += 15
+
+    # proveravamo potencijalnu liniju,
+    # u slucaju da imaju 2 kamena iste boje, apsolutni zbir ce biti 2
+    if abs(line_sum) == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
+        value += line_sum * 7
 
     # gornja linija medju kvadratima
     line_sum = 0
@@ -65,8 +136,8 @@ def evaluate(state):
 
     if abs(line_sum) == 3:
         value += line_sum * 10
-        if line_sum == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
-                value += 15
+    if abs(line_sum) == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
+            value += line_sum * 7
 
     # desna linija medju kvadratima
     line_sum = 0
@@ -75,136 +146,39 @@ def evaluate(state):
 
     if abs(line_sum) == 3:
         value += line_sum * 10
-        if line_sum == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
-                value += 15
+    if abs(line_sum) == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
+            value += line_sum * 7
+
     # donja linija medju kvadratima
     line_sum = 0
     for square in range(3):
         line_sum += stones[square][2][1]
 
-    # Primer dodavanja T-oblika
-    for square in range(3):
-        if (
-        stones[square][0][1] == stones[square][1][1] == stones[square][2][1]
-        and stones[square][1][0] == 0
-        and stones[square][1][2] == 0
-    ):
-         value += stones[square][0][1] * 10
-
-
-    # Primer dodavanja L-oblika (ignoriši centralnu tačku srednjeg kvadrata)
-    for square in range(3):
-    # Horizontalni L-oblik
-        if (
-        stones[square][0][0] == stones[square][1][0] == stones[square][2][0]
-        and stones[square][0][1] == 0
-        and stones[square][0][2] == 0
-    ):
-            value += stones[square][0][0] * 10
-
-    # Vertikalni L-oblik
-    if (
-        stones[square][0][0] == stones[square][0][1] == stones[square][0][2]
-        and stones[square][1][0] == 0
-        and stones[square][2][0] == 0
-    ):
-        value += stones[square][0][0] * 10
-
-    # Diagonalni L-oblik (od gornjeg levog do donjeg desno)
-    if (
-        stones[square][0][0] == stones[square][1][1] == stones[square][2][2]
-        and stones[square][0][1] == 0
-        and stones[square][0][2] == 0
-        and stones[square][1][0] == 0
-        and stones[square][2][0] == 0
-    ):
-        value += stones[square][0][0] * 10
-
-    # Diagonalni L-oblik (od gornjeg desnog do donjeg levog)
-    if (
-        stones[square][0][2] == stones[square][1][1] == stones[square][2][0]
-        and stones[square][0][0] == 0
-        and stones[square][0][1] == 0
-        and stones[square][1][2] == 0
-        and stones[square][2][2] == 0
-    ):
-        value += stones[square][0][2] * 10
-
-    # Identifikacija potencijalnih mlinova za belog igrača
-    for square in range(3):
-        for line in [0, 2]:
-            line_sum = 0
-            for spot in range(3):
-                line_sum += state['stones'][square][line][spot]
-
-            if abs(line_sum) == 2:
-                # Blokiranje potencijalnih mlinova postavljanjem crnog kamena u blizini
-                for spot in range(3):
-                    if state['stones'][square][line][spot] == 0:
-                        state_copy = copy.deepcopy(state)
-                        apply_move(state_copy, (SET_STONE, BLACK, square, line, spot))
-                        vred_potencijalnog_mlina = evaluate(state_copy)
-                        # Postavljanje kazne na -15 za belog igraca ako pokusa da napravi mlin
-                        value -= 25
-
-                if square in [0, 1]:
-                        for spot_block in range(3):
-                            if state['stones'][square][line][spot_block] == 0:
-                                state_copy_block = copy.deepcopy(state_copy)
-                                apply_move(state_copy_block, (SET_STONE, WHITE, square, line, spot_block))
-                                vred_potencijalnog_block = evaluate(state_copy_block)
-                                # Nagrađivanje crnog igrača sa 15 bodova za blokiranje belog igrača
-                                value += 35
-
-
-    if stones[1][1][1] == BLACK:
-        value += 30 
-
     if abs(line_sum) == 3:
         value += line_sum * 10
-        if line_sum == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
-                value += 15
-
-    # Evaluacija za poteze u sredini kvadrata
-    value += stones[1][1][1] * 20
+    if abs(line_sum) == 2:  # Dodatna nagrada za crnog igraca kada krene da formira mlin, to znaci da je stavio dva kamena jedan pored dugog i to je potencijalno stanje da se napravi mlin koji sadrzi 3 kamena.
+            value += line_sum * 7
 
     # count number of stones
-    value -= state['white_count'] * 10
-    value += state['black_count'] * 10
+    value += state['white_count'] * 10
+    value -= state['black_count'] * 10
     return value
 
 
 # HEURISTIKA ZA LAKU IGRU
 def easy_evaluate(state):
     value = 0
-    value -= state['white_count'] * 2
-    value += state['black_count'] * 2
+    value += state['white_count'] * 2
+    value -= state['black_count'] * 2
     return value
 
 
 # HEURISTIKA ZA SREDNJU IGRU
-# heuristika za srednju igru
+# Ovde samo nagradjuje mlinove a ne nagradjuje potenceijalne mlinove
 def medium_evaluate(state):
     stones = state['stones']  # matrica kamena na tabli
 
     value = 0  # inicijalna vrednost evaluacije
-
-    # identifikacija potencijalnih mlinova za crnog igraca i blokiranje belog igraca
-    for square in range(3):  # prolaz kroz sva 3 kvadrata
-        for line in [0, 2]:  # prolaz kroz horizontalne linije u kvadratu
-            line_sum = 0
-            for spot in range(3):  # prolaz kroz sve pozicije u liniji
-                line_sum += state['stones'][square][line][spot]
-
-            if abs(line_sum) == 2:  # ako beli igrac ima 2 kamena u liniji
-                # blokiranje potencijalnih mlinova belog igraca postavljanjem crnog kamena u blizini
-                for spot in range(3):
-                    if state['stones'][square][line][spot] == 0:  # ako je pozicija prazna
-                        state_copy = copy.deepcopy(state)  # kopiranje stanja
-                        apply_move(state_copy, (SET_STONE, BLACK, square, line, spot))  # postavljanje crnog kamena
-                        vred_potencijalnog_mlina = evaluate(state_copy)  # evaluacija novog stanja
-                        # nagradjivanje crnog igraca sa 15 bodova ako blokira belog igraca
-                        value += 15
 
     # brojanje horizontalnih linija
     for square in range(3):  # prolaz kroz sva 3 kvadrata
@@ -214,7 +188,7 @@ def medium_evaluate(state):
                 line_sum += stones[square][line][spot]
 
             if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
-                value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
+                value += line_sum * 5  # dodavanje vrednosti u zavisnosti od broja kamena
 
     # brojanje vertikalnih linija
     for square in range(3):  # prolaz kroz sva 3 kvadrata
@@ -224,23 +198,23 @@ def medium_evaluate(state):
                 line_sum += stones[square][spot][line]
 
             if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
-                value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
+                value += line_sum * 5  # dodavanje vrednosti u zavisnosti od broja kamena
 
     # leva linija među kvadratima
     line_sum = 0
     for square in range(3):  # prolaz kroz sva 3 kvadrata
-        line_sum += stones[square][1][1]
+        line_sum += stones[square][1][0]
 
     if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
-        value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
+        value += line_sum * 5  # dodavanje vrednosti u zavisnosti od broja kamena
 
     # gornja linija među kvadratima
     line_sum = 0
     for square in range(3):  # prolaz kroz sva 3 kvadrata
         line_sum += stones[square][0][1]
 
-    if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
-        value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
+    if abs(line_sum) == 3:  # ako postoji linija sa 3 kamen
+        value += line_sum * 5  # dodavanje vrednosti u zavisnosti od broja kamena
 
     # desna linija među kvadratima
     line_sum = 0
@@ -248,7 +222,7 @@ def medium_evaluate(state):
         line_sum += stones[square][1][2]
 
     if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
-        value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
+        value += line_sum * 5  # dodavanje vrednosti u zavisnosti od broja kamena
 
     # donja linija među kvadratima
     line_sum = 0
@@ -256,12 +230,16 @@ def medium_evaluate(state):
         line_sum += stones[square][2][1]
 
     if abs(line_sum) == 3:  # ako postoji linija sa 3 kamena
-        value += line_sum * 2  # dodavanje vrednosti u zavisnosti od broja kamena
+        value += line_sum * 5  # dodavanje vrednosti u zavisnosti od broja kamena
+    
+    value += state['white_count'] * 2
+    value -= state['black_count'] * 2
 
     return value 
 
 
-
+# prazna polja koja su susedna nekom kamenu.
+# x, y, z su koordinata datog kamena
 def get_neighboaring_empty_spots(state, x, y, z):
     stones = state['stones']
 
@@ -281,50 +259,62 @@ def get_neighboaring_empty_spots(state, x, y, z):
     if z != 1 and y + 1 <= 2 and stones[x][y + 1][z] == 0:
         yield x, y + 1, z
 
-    # unurasnji deo gde se ispisuje mill to da kulira
+    # proverava ima li prazno polje po liniji koa spaja kvadrate
+    # gleda ka spoljnjem kvadratu (kvadratu koji je oko trenutnog)
     if (y == 1 or z == 1) and x - 1 >= 0 and stones[x - 1][y][z] == 0:
         yield x - 1, y, z
 
-    # cross-square in
+    # proverava ima li prazno polje po liniji koa spaja kvadrate
+    # gleda ka unutrasnjem kvadratu (kvadratu koji je unutar trenutnog)
     if (y == 1 or z == 1) and x + 1 <= 2 and stones[x + 1][y][z] == 0:
         yield x + 1, y, z
 
 
 def get_moves(state, player, line_made):
     moves = []
-    # ovde se uklanja kamen, vrsi se provera da li je napravljena linija ako jeste uklanja kamen
+    # vrsi se provera da li je napravljena linija, ako jeste uklanja kamen
     if line_made:
-        # ovde for petljom prolazim kroz svaki kvastrat i stavljam u niz kamenje
+        # ovde for petljom prolazim kroz svaki kvastrat i stavlja u niz kamenje
         for s, square in enumerate(state['stones']):
             for i, row in enumerate(square):  # prolazi kroz svaki red
                 # prolazi kroz svaki element u tom redu
                 for j, element in enumerate(row):
-                    # ovde proverava da li je kamen u liniji
-                    # pitamo da li je to protivnikov kamen i proverava da li je kamen u liniji
+                    # ovde proverava da li je kamen u liniji, ako jeste onda nece biti validan potez
+                    # pa ne dodajemo u moguce poteze.
+                    # pitamo da li je to protivnikov kamen
                     if element == player * -1 and not is_stone_in_line(state, s, i, j):
                         moves.append((REMOVE_STONE, player, s, i, j))
         return moves
 
     # SET_STONE moves
-    if len(moves) == 0 and state['white_remaining' if player == 1 else 'black_remaining'] > 0:
+    # ako smo u fazi postavljanja kamenja, trazimo sva prazna polja i kreiramo potez postavljanja na to polje
+    current_player_remaining = 'white_remaining' if player == WHITE else 'black_remaining'
+    if len(moves) == 0 and state[current_player_remaining] > 0: # u set fazi zmo ako je uslov ispunjen
         for s, square in enumerate(state['stones']):
             for i, row in enumerate(square):
                 for j, element in enumerate(row):
+                    # preskacemo centralni element jer se ne koristi u igri
                     if i == 1 and j == 1:
                         continue
-                    if element == 0:  # da li na tom mestu mozemo da postavimo kamen
+                    # proveravamo je li trenutno polje prazno.
+                    # ako jeste, dodajemo potez za postavljanje kamena
+                    # trenutnog igraca na to polje
+                    if element == 0:
                         moves.append((SET_STONE, player, s, i, j))
         return moves
 
     # MOVE_STONE moves
+    # ako smo u fazi pomeranja kamenja, proveravamo gde svaki kamen trenutnog igraca moze da se pomeri
     if len(moves) == 0:
         for s, square in enumerate(state['stones']):
             for i, row in enumerate(square):
                 for j, element in enumerate(row):
-                    if element == player:  # pitam da li je crni kamen
-                        # prolazim kroz petlju i proveravam gde ima slobodno mesto, state je nase trenutno stanje igre, s i j to je x y z
+                    # ako kamen pripada trenutnom igracu, trazimo sva prazna susdna polja.
+                    # na svako prazno susedno polje trenutni kamen moze da se pomeri
+                    if element == player:
+                        # za svako prazno susedno polje kreiramo moguci potez pomeranja trenutnog kamena na to polje
                         for x, y, z in get_neighboaring_empty_spots(state, s, i, j):
-                            # s, i, j su nove koordinate odnostno pomocna koja update state
+                            # s, i, j su trenutne koordinate kamena, a x, y i z su koordinate na koje moze da se pomeri
                             moves.append(
                                 (MOVE_STONE, player, x, y, z, s, i, j))
     return moves
@@ -425,88 +415,28 @@ def is_making_line(state, move):
     stones = state['stones']
     _, _, x, y, z, *_ = move
 
-    # Provera horizontalne linije
+    # Provera horizontalnu liniju
     if abs(sum(stones[x][y])) == 3:
         return True
 
-    # Provera vertikalne linije
+    # Provera vertikalnu liniju
     if abs(sum(stones[x][i][z] for i in range(3))) == 3:
         return True
 
-    # Provera dijagonalne linije
-    if x == 1 and y == 1 and z == 1:
-        if abs(sum(stones[i][1][1] for i in range(3))) == 3:
-            return True
-
-    # Provera dijagonalne linije koja prolazi kroz sredinu tabele
-    if abs(sum(stones[i][1][1] for i in range(3))) == 3:
-        return True
-    if abs(sum(stones[1][i][1] for i in range(3))) == 3:
-        return True
-    if abs(sum(stones[1][1][i] for i in range(3))) == 3:
-        return True
-
-    # Provera horizontalnih, vertikalnih i dijagonalnih linija za sve x, y, z
-    for i in range(3):
-        # Provera horizontalne linije za sve x
-        if abs(sum(stones[i][y])) == 3:
-            return True
-        # Provera vertikalne linije za sve z
-        if abs(sum(stones[x][j][z] for j in range(3))) == 3:
-            return True
-
-        # Provera dijagonalne linije za x, y, z
-        if abs(sum(stones[j][i][j] for j in range(3))) == 3:
-            return True
-        if abs(sum(stones[j][i][2 - j] for j in range(3))) == 3:
-            return True
-        if abs(sum(stones[j][y][j] for j in range(3))) == 3:
-            return True
-        if abs(sum(stones[x][j][j] for j in range(3))) == 3:
-            return True
-        if abs(sum(stones[j][1][z] for j in range(3))) == 3:
-            return True
-        if abs(sum(stones[x][1][j] for j in range(3))) == 3:
-            return True
-        if abs(sum(stones[1][y][j] for j in range(3))) == 3:
-            return True
-        if abs(sum(stones[j][y][2 - j] for j in range(3))) == 3:
-            return True
-
-    # Provera linija koje prolaze kroz susedne kvadrate
+    # Provera linija(sredisnja) koje spajaju kvadrate
     if y == 0 or y == 2:
+        # gornja sredisnja linija
         if abs(sum(stones[x][0][1] for x in range(3))) == 3:
             return True
+        # donja
         if abs(sum(stones[x][2][1] for x in range(3))) == 3:
             return True
     if z == 0 or z == 2:
+        # leva
         if abs(sum(stones[x][1][0] for x in range(3))) == 3:
             return True
+        # desna
         if abs(sum(stones[x][1][2] for x in range(3))) == 3:
-            return True
-
-    # Dodatna provera za sve x, y, z
-    for i in range(3):
-        # Provera horizontalnih linija za sve y
-        if abs(sum(stones[x][i][z] for x in range(3))) == 3:
-            return True
-        # Provera vertikalnih linija za sve x i z
-        if abs(sum(stones[j][y][z] for j in range(3))) == 3:
-            return True
-        # Provera dijagonalnih linija za sve x i y
-        if abs(sum(stones[z][i][j] for j in range(3))) == 3:
-            return True
-
-    # Provera linija koje prolaze kroz susedne kvadrate za z
-    if x == 0 or x == 2:
-        if abs(sum(stones[0][i][z] for i in range(3))) == 3:
-            return True
-        if abs(sum(stones[2][i][z] for i in range(3))) == 3:
-            return True
-    if y == 0 or y == 2:
-        if abs(sum(stones[i][0][z] for i in range(3))) == 3:
-            return True
-        if abs(sum(stones[i][2][z] for i in range(3))) == 3:
             return True
 
     return False
@@ -517,22 +447,24 @@ def apply_move(state, move):
     stones = state['stones']
     if move[MOVE_TYPE] == SET_STONE:  # koji je potez na redu u ovom slucaju je postavljanje
         _, color, x, y, z = move  # uzimamo koordinate tog kamena i njegovu boju
-        # kada nadje to stanje u koordinatama tu postavljamo kamen odgovarajuce boje
+        # na tim koordinatama postavljamo kamen odgovarajuce boje
         stones[x][y][z] = color
-        # kada postavi kamen uklanja za jedan od onih koje ima
+        # kada postavi kamen smanjuje za jedan od onih koje ima
         state['white_remaining' if color == WHITE else 'black_remaining'] -= 1
         # povecava broj kamena na tabli
         state['white_count' if color == WHITE else 'black_count'] += 1
     elif move[MOVE_TYPE] == REMOVE_STONE:  # sada ako je na redu uklanjanje
-        _, color, x, y, z = move  # isto proverava koordinate, info stavlja u niz move
+        _, color, x, y, z = move  # isto proverava koordinate kamena koji uklanjamo
         # kada pojedemo kamen tu stavljamo stanje 0, znaci da na toj koordinati nema vise kamena na tabli
         stones[x][y][z] = 0
         # gleda se koja je boja, i uklanja se taj kamen
         state['white_count' if color == WHITE else 'black_count'] -= 1
     elif move[MOVE_TYPE] == MOVE_STONE:  # pomeranje kamena
-        # sada uzimamo stanje boje i koordinata od oba kamena gde treba da postavi i gde da makne
+        # sada uzimamo koordinate oba kamena gde treba da postavi i gde da makne
+        # sa koordinata koje pocinju sa 'from' se uklanja kamen
+        # a na koordinate koje pocinju sa 'to' se postavlja kamen
         _, color, to_x, to_y, to_z, from_x, from_y, from_z = move
-        # na to mesto gde se mako kamen restartije vrednost na 0
+        # na to mesto gde se makao kamen restartuje vrednost na 0
         stones[from_x][from_y][from_z] = 0
         # na toj novoj poziciji gde se postavio kamen se stavlja odgovarajuca boja odnosno vrednost
         stones[to_x][to_y][to_z] = color
@@ -540,7 +472,7 @@ def apply_move(state, move):
     state['turn'] += 1
 
 
-def minimax(state, depth, player, line_made=False, alpha=float('-inf'), beta=float('inf')):
+def minimax(state, depth, player, line_made=False):
     # pitamo da li je dostigao dubinu nula i da li je kraj igre
     if depth == 0 or is_end(state):
         # ako nije vraca tu easy heuristiku, ako je kraj igre vraca none i nista ne radi
@@ -560,17 +492,12 @@ def minimax(state, depth, player, line_made=False, alpha=float('-inf'), beta=flo
                 next_player *= -1  # daje potez sledecem igracu
                 line_made = True  # vraca vrednost true jer linija je formirana
             # rekurzivno pozivam minimax alg da sledeci igra
-            new_value = minimax(state, depth - 1, next_player,
-                                line_made, alpha, beta)[0]
+            state_copy = copy.deepcopy(state)
+            new_value = minimax(state_copy, depth - 1, next_player,line_made)[0]
             if new_value > value:  # ako je nova vrednost veca od stare vrednosti uzima tu najnoviju vrednost kao najbolji potez
                 value = new_value
                 best_move = move
             line_made = False
-            # undo_move(state, move)
-            # ovde koristim alphabeta odsecanje, svaki put max igrac(covek) azurira svoju vrednost za alfa pitace da li nam je ta vrednost veca ili jednaka od bete
-            alpha = max(alpha, value)
-            if value >= beta:  # ako jeste onda stablo koje ima gori potez odseca ga
-                break
     else:
         # isti princim kao za belog ovo gleda za crnog igraca, ide + beskonacno kako bi minimizirao svoj potez
         value = float('inf')
@@ -580,28 +507,24 @@ def minimax(state, depth, player, line_made=False, alpha=float('-inf'), beta=flo
             if is_making_line(state, move):
                 next_player *= -1
                 line_made = True
-            new_value = minimax(state, depth - 1, next_player,
-                                line_made, alpha, beta)[0]
+            state_copy = copy.deepcopy(state)
+            new_value = minimax(state_copy, depth - 1, next_player, line_made)[0]
             if new_value < value:
                 value = new_value
                 best_move = move
             line_made = False
-            # undo_move(state, move)
-            beta = min(beta, value)
-            if value <= alpha:
-                break
 
     return value, best_move
 
 # MEDIUM
-def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
+def alphabeta_medium(state, depth, a, b, player, line_made=False):
     if depth == 0 or is_end(state):
         return medium_evaluate(state), None
 
     next_player = player * -1
 
     if player == WHITE:
-        value = float('-inf')
+        value = -100000
         best_move = None
         for move in get_moves(state, player, line_made):
             state_copy = copy.deepcopy(state)
@@ -609,8 +532,7 @@ def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
             if is_making_line(state_copy, move):
                 next_player *= -1
                 line_made = True
-            new_value = alphabeta(state_copy, depth - 1,
-            a, b, next_player, line_made, -1)[0]
+            new_value = alphabeta_medium(state_copy, depth - 1,a, b, next_player, line_made)[0]
             if new_value > value or best_move is None:
                 best_move = move
                 value = new_value
@@ -620,7 +542,7 @@ def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
             a = max(a, value)
         return value, best_move
     elif player == BLACK:
-        value = float('inf')
+        value = 100000
         best_move = None
         for move in get_moves(state, player, line_made):
             state_copy = copy.deepcopy(state)
@@ -628,8 +550,7 @@ def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
             if is_making_line(state_copy, move):
                 next_player *= -1
                 line_made = True
-            new_value = alphabeta(state_copy, depth - 1,
-            a, b, next_player, line_made, 1)[0]
+            new_value = alphabeta_medium(state_copy, depth - 1,a, b, next_player, line_made)[0]
             if new_value < value or best_move is None:
                 best_move = move
                 value = new_value
@@ -640,30 +561,41 @@ def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
         return value, best_move
 
 # HARD
-def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
+def alphabeta(state, depth, a, b, player, line_made=False):
     if depth == 0 or is_end(state):
         return evaluate(state), None
 
+    # next_player je sledeci igrac, a player je trenutni
     next_player = player * -1
 
+    # ako je trenutni igrac beli, vrsi se maximizing deo algoritma
     if player == WHITE:
+        # vrednost je u pocetku veliki negativni broj jer trazimo najveci koji se pojavi
         value = -1000000
         best_move = None
+        # za svaki moguci sledeci potez, izvrsavamo dalje algoritam
         for move in get_moves(state, player, line_made):
+            # kreiramo kopiju stanja da bi nam ostao original kao sto trenutno jeste
             state_copy = copy.deepcopy(state)
+            # promenimo kopiju stanja tako da je odigran potez koji trenutno posmatramo
             apply_move(state_copy, move)
+            # ako trenutni potez kreira liniju, seledeci igrac ostaje isti
             if is_making_line(state_copy, move):
+                # vracamo sledeceg igraca na proslu vrednost
                 next_player *= -1
                 line_made = True
 
+            # razvijamo stablo igre dalje i uzimamo vrednost stanja do kojeg su nas ti potezi doveli
             new_value, _ = alphabeta(
-                state_copy, depth - 1, a, b, next_player, line_made, -1)
+                state_copy, depth - 1, a, b, next_player, line_made)
+            # ako smo naisli na potez koji ima vecu vrednost
+            # postavaljamo najbolji potez na taj i najbolju vrednost na vrednost koja njemu odgovara
             if new_value > value or best_move is None:
                 best_move = move
                 value = new_value
 
             line_made = False
-            # print(f"DEBUG: {move} - {value} ({a}, {b})")
+            # vrsimo odsecanje ako je trenutna vrednost veca od b(beta)
             if value > b:
                 break
             a = max(a, value)
@@ -681,7 +613,7 @@ def alphabeta(state, depth, a, b, player, line_made=False, rock=-1):
                 line_made = True
 
             new_value, _ = alphabeta(
-                state_copy, depth - 1, a, b, next_player, line_made, 1)
+                state_copy, depth - 1, a, b, next_player, line_made)
             if new_value < value or best_move is None:
                 best_move = move
                 value = new_value
